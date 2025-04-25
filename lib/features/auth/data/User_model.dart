@@ -1,21 +1,39 @@
 class UserModel {
-final String uid;
-final String username;
-final String Email;
-final String password;
+  final String uid;
+  final String username;
+  final String email;
+  final String password;
+  final String? profileImgUrl;
+  final String? bio;
 
   UserModel({
     required this.uid,
     required this.username,
-    required this.Email,
-    required this.password});
+    required this.email,
+    required this.password,
+    this.profileImgUrl,
+    this.bio,
+  });
 
+  Map<String, dynamic> toJson() {
+    return {
+      "uid": uid,
+      "username": username,
+      "email": email,
+      "password": password,
+      "profileImgUrl": profileImgUrl,
+      "bio": bio,
+    };
+  }
 
-toJson(){
-  return {
-    "username":username,
-    "Email":Email,
-    "password":password,
-  };
-}
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      uid: json["uid"],
+      username: json["username"],
+      email: json["email"],
+      password: json["password"],
+      profileImgUrl: json["profileImgUrl"],
+      bio: json["bio"],
+    );
+  }
 }

@@ -13,8 +13,8 @@ LinearGradient myLinearGradient() {
   return LinearGradient(
     colors: [
       Color(0xff173054),   // Start color
-      Color.fromARGB(255, 83, 69, 196),   // Start color
-      Color.fromARGB(255, 127, 38, 175),   // Start color
+      Color(0xFF5345C4),   // Start color
+      Color(0xFF7F26AF),   // Start color
          // End color
     ],
     stops: [0.04, 0.3, 1.4],
