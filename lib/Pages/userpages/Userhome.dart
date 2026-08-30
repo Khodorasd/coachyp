@@ -1,7 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:coachyp/Pages/Sportschooser.dart';
+import 'package:coachyp/Pages/userpages/Sportschooser.dart';
 import 'package:coachyp/colors.dart';
+import 'package:coachyp/features/Profile/presantation/pages/SettingsPage.dart';
 import 'package:coachyp/features/chat/data/search_user_page.dart';
 import 'package:coachyp/features/posts/presentation/pages/UserPost.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +100,12 @@ class _UserhomepageState extends State<Userhomepage> {
         ),
         leading: IconButton(
           icon: const Icon(LineIcons.cog),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                );
+          },
         ),
         actions: [
           IconButton(
@@ -202,6 +208,7 @@ class _UserhomepageState extends State<Userhomepage> {
                           profileImgUrl: p.profileImgUrl,
                           likes: p.likes,
                           coachId: p.coachId,
+                          availableDates: p.availableDates,
                         );
                       },
                     );

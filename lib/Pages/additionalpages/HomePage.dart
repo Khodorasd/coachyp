@@ -1,4 +1,4 @@
-import 'package:coachyp/Pages/Coachhome.dart';
+import 'package:coachyp/Pages/coachpages/Coachhome.dart';
 import 'package:coachyp/features/posts/presentation/pages/create_post_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,14 +7,13 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 
 // Your pages
-import 'package:coachyp/Pages/Notifications.dart';
-import 'package:coachyp/features/search/Search.dart';
-import 'package:coachyp/Pages/Userhome.dart';
+import 'package:coachyp/Pages/additionalpages/Notifications.dart';
+import 'package:coachyp/Pages/userpages/Userhome.dart';
 import 'package:coachyp/features/Profile/presantation/pages/UserProfile.dart';
 import 'package:coachyp/features/search/searchFor/Searchfor.dart';
 
 // Your color config
-import '../colors.dart';
+import '../../colors.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

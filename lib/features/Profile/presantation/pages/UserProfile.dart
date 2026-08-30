@@ -69,22 +69,22 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () => PaymentManager.makePayment(20, "USD"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 4,
-              ),
-              icon: const Icon(Icons.payment, color: Colors.black),
-              label: const Text(
-                "Make Payment",
-                style: TextStyle(color: Colors.black87, fontSize: 16),
-              ),
-            ),
+            // ElevatedButton.icon(
+            //   onPressed: () => PaymentManager.makePayment(20, "USD"),
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: Colors.white,
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            //     shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(12)),
+            //     elevation: 4,
+            //   ),
+            //   icon: const Icon(Icons.payment, color: Colors.black),
+            //   label: const Text(
+            //     "Make Payment",
+            //     style: TextStyle(color: Colors.black87, fontSize: 16),
+            //   ),
+            // ),
             const SizedBox(height: 40),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -92,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(60),
                   foregroundColor: Colors.black87,
-                  backgroundColor: const Color.fromARGB(255, 215, 71, 60),
+                  backgroundColor: const Color.fromARGB(255, 231, 109, 100),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -107,11 +107,12 @@ class ProfileScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.logout),
+                    Icon(Icons.logout,color: Colors.white,),
                     SizedBox(width: 10),
                     Text(
                       "Log Out",
                       style: TextStyle(
+                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

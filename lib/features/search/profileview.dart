@@ -1,11 +1,14 @@
 import 'package:coachyp/features/search/builder/CoachPostsListWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:coachyp/colors.dart';
+import 'package:coachyp/features/chat/data/chatRoom.dart';
+import 'package:coachyp/features/posts/presentation/pages/sessions.dart';
 
 class OtherProfilePage extends StatefulWidget {
   final String userId;
+
   const OtherProfilePage({Key? key, required this.userId}) : super(key: key);
 
   @override
@@ -14,12 +17,9 @@ class OtherProfilePage extends StatefulWidget {
 
 class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final Map<DateTime, int> availability = {
-    DateTime.utc(2025, 4, 24): 0,
-    DateTime.utc(2025, 4, 25): 2,
-    DateTime.utc(2025, 4, 26): 0,
-    DateTime.utc(2025, 4, 27): 4,
-  };
+  Map<String, dynamic>? _coachData; // save coach data for messaging and booking
+
+ 
 
   @override
   void initState() {
@@ -66,16 +66,17 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
                   child: Text('Error loading profile',
                       style: TextStyle(color: Colors.white)));
             }
-            if (!snapshot.hasData ||
-                snapshot.connectionState == ConnectionState.waiting) {
+            if (!snapshot.hasData || snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
 
             final data = snapshot.data!;
-            final username = data.get('username') ?? '';
-            final type = data.get('type') ?? '';
-            final profileUrl = data.get('profileImgUrl') ?? '';
-            final bio = data.get('bio') ?? 'No bio available';
+            _coachData = data.data() as Map<String, dynamic>?;
+
+            final username = _coachData?['username'] ?? '';
+            final type = _coachData?['type'] ?? '';
+            final profileUrl = _coachData?['profileImgUrl'] ?? '';
+            final bio = _coachData?['bio'] ?? 'No bio available';
 
             return Column(
               children: [
@@ -117,11 +118,15 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
                               textAlign: TextAlign.center),
                         ),
                         const SizedBox(height: 30),
+
+                        // Send Message button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              // TODO: implement messaging
+                              if (_coachData != null) {
+                                _sendMessage(context, _coachData!);
+                              }
                             },
                             icon: const Icon(Icons.message, color: Colors.white),
                             label: const Text('Send Message',
@@ -136,7 +141,50 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
                             ),
                           ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // Show Availability button
+                        if (_coachData != null && _coachData!['availableDates'] != null)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                final availableDatesMap =
+                                    Map<String, dynamic>.from(_coachData!['availableDates']);
+                                final convertedDates = availableDatesMap.map(
+                                  (key, value) => MapEntry(key, List<String>.from(value)),
+                                );
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BookingPage(
+                                      availableDates: convertedDates,
+                                      coachUserMap: {
+                                        'uid': widget.userId,
+                                        'username': _coachData!['username'] ?? '',
+                                        'profilepicture': _coachData!['profileImgUrl'] ?? '',
+                                        'type': _coachData!['type'] ?? '',
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.calendar_month, color: Colors.white),
+                              label: const Text('Show Availability',
+                                  style: TextStyle(color: Colors.white, fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.s2,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                elevation: 4,
+                              ),
+                            ),
+                          ),
+
                         const SizedBox(height: 20),
+
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -148,7 +196,7 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
                                 controller: _tabController,
                                 tabs: const [
                                   Tab(icon: Icon(Icons.grid_on, color: Colors.black)),
-                                  Tab(icon: Icon(Icons.calendar_today, color: Colors.black)),
+                                  
                                 ],
                                 indicatorColor: AppColors.s2,
                               ),
@@ -158,7 +206,7 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
                                   controller: _tabController,
                                   children: [
                                     _buildPostsTab(),
-                                    _buildCalendarTab(),
+                                    
                                   ],
                                 ),
                               ),
@@ -177,47 +225,38 @@ class _OtherProfilePageState extends State<OtherProfilePage> with SingleTickerPr
     );
   }
 
-  // 🔥 Posts Tab Builder
-  Widget _buildPostsTab() {
-    return CoachPostsListWidget(coachId: widget.userId);
-  }
+  // 🔥 Send message function
+  void _sendMessage(BuildContext context, Map<String, dynamic> coachData) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
 
-  // 🔥 Calendar Tab Builder
-  Widget _buildCalendarTab() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: TableCalendar(
-        firstDay: DateTime.utc(2025, 1, 1),
-        lastDay: DateTime.utc(2025, 12, 31),
-        focusedDay: DateTime.now(),
-        calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) {
-            final cleanDay = DateTime.utc(day.year, day.month, day.day);
-            final slots = availability[cleanDay];
-            Color? bgColor;
+    final chatRoomId = _getChatRoomId(currentUser.uid, widget.userId);
 
-            if (slots == 0) {
-              bgColor = Colors.red;
-            } else if (slots != null && slots > 0) {
-              bgColor = Colors.green;
-            }
-
-            return Container(
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '${day.day}',
-                style: TextStyle(
-                  color: bgColor != null ? Colors.white : Colors.black,
-                ),
-              ),
-            );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatRoom(
+          chatRoomId: chatRoomId,
+          userMap: {
+            'uid': widget.userId,
+            'username': coachData['username'] ?? '',
+            'profilepicture': coachData['profileImgUrl'] ?? '',
+            'type': coachData['type'] ?? '',
           },
         ),
       ),
     );
   }
+
+  String _getChatRoomId(String uid1, String uid2) {
+    return uid1.hashCode <= uid2.hashCode ? '${uid1}_$uid2' : '${uid2}_$uid1';
+  }
+
+  // 🔥 Posts tab
+  Widget _buildPostsTab() {
+    return CoachPostsListWidget(coachId: widget.userId);
+  }
+
+  // 🔥 Calendar tab
+ 
 }

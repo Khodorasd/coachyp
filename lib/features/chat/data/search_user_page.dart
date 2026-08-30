@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coachyp/features/chat/data/chatRoom.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:coachyp/features/chat/data/chatRoom.dart';
 
 class SearchUserPage extends StatefulWidget {
   const SearchUserPage({super.key});
@@ -11,6 +11,8 @@ class SearchUserPage extends StatefulWidget {
 }
 
 class _SearchUserPageState extends State<SearchUserPage> {
+  bool _isFetchingRecentChats = true;
+
   final TextEditingController _searchController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -18,11 +20,11 @@ class _SearchUserPageState extends State<SearchUserPage> {
   List<Map<String, dynamic>> _searchResults = [];
   List<Map<String, dynamic>> _recentChats = [];
   bool _isLoading = false;
-  bool _isFetchingRecentChats = true; // NEW
 
   @override
   void initState() {
     super.initState();
+
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
         fetchRecentChats();
@@ -38,10 +40,18 @@ class _SearchUserPageState extends State<SearchUserPage> {
     final currentUid = _auth.currentUser?.uid;
     if (currentUid == null) return;
 
+    setState(() {
+      _isFetchingRecentChats = true;
+    });
+
     final Set<String> contactUids = {};
     final List<Map<String, dynamic>> users = [];
 
     try {
+      final currentUserDoc = await _firestore.collection('users').doc(currentUid).get();
+      final currentCoachDoc = await _firestore.collection('coaches').doc(currentUid).get();
+      final isCoach = currentCoachDoc.exists;
+
       final chatsSnapshot = await _firestore.collection('chats').get();
 
       for (var chatDoc in chatsSnapshot.docs) {
@@ -50,32 +60,36 @@ class _SearchUserPageState extends State<SearchUserPage> {
             .doc(chatDoc.id)
             .collection('messages')
             .orderBy('timestamp', descending: true)
+            .limit(1)
             .get();
 
-        for (var message in messagesSnapshot.docs) {
-          final data = message.data();
-          final senderId = data['senderId'];
-          final receiverId = data['receiverId'];
+        if (messagesSnapshot.docs.isNotEmpty) {
+          final lastMessageData = messagesSnapshot.docs.first.data();
+          final senderId = lastMessageData['senderId'];
+          final receiverId = lastMessageData['receiverId'];
+          final isSeenRaw = lastMessageData['isSeen'] ?? true;
+
+          final bool showGreenDot =
+              senderId != currentUid &&
+              receiverId == currentUid &&
+              isSeenRaw == false;
 
           if (senderId == currentUid || receiverId == currentUid) {
             final otherUid = senderId == currentUid ? receiverId : senderId;
 
             if (!contactUids.contains(otherUid)) {
-              DocumentSnapshot userDoc = await _firestore.collection('users').doc(otherUid).get();
+              final targetCollection = isCoach ? 'users' : 'coaches';
+              final targetDoc = await _firestore.collection(targetCollection).doc(otherUid).get();
 
-              if (!userDoc.exists) {
-                userDoc = await _firestore.collection('coaches').doc(otherUid).get();
-              }
-
-              if (userDoc.exists && userDoc.data() != null) {
-                final userData = userDoc.data()! as Map<String, dynamic>;
-
+              if (targetDoc.exists && targetDoc.data() != null) {
+                final data = targetDoc.data()! as Map<String, dynamic>;
                 users.add({
                   'uid': otherUid,
-                  'username': userData['username'] ?? 'Unknown',
-                  'role': userData['role'] ?? 'user',
+                  'username': data['username'] ?? 'Unknown',
+                  'type': data['type'] ?? (isCoach ? 'user' : 'coach'),
+                  'profilepicture': data['profileImgUrl'] ?? '',
+                  'isSeen': !showGreenDot,
                 });
-
                 contactUids.add(otherUid);
               }
             }
@@ -85,64 +99,56 @@ class _SearchUserPageState extends State<SearchUserPage> {
 
       setState(() {
         _recentChats = users;
-        _isFetchingRecentChats = false; // stop loading
+        _isFetchingRecentChats = false;
       });
       print("✅ Recent chats loaded: ${users.length}");
     } catch (e) {
-      print('❌ Error fetching recent chats: $e');
+      print('❌ Error fetching recent chats: \$e');
       setState(() {
-        _isFetchingRecentChats = false; // stop loading even if error
+        _isFetchingRecentChats = false;
       });
     }
   }
 
   void searchUsers() async {
     setState(() {
-      _isLoading = true;
+      if (_isLoading || _isFetchingRecentChats) ;
     });
 
     final query = _searchController.text.trim().toLowerCase();
     final currentUid = _auth.currentUser?.uid;
+    if (currentUid == null) return;
+
+    final currentUserDoc = await _firestore.collection('users').doc(currentUid).get();
+    final currentCoachDoc = await _firestore.collection('coaches').doc(currentUid).get();
+    final isCoach = currentCoachDoc.exists;
+
     List<Map<String, dynamic>> combinedResults = [];
+    final targetCollection = isCoach ? 'users' : 'coaches';
+    final targetSnapshot = await _firestore.collection(targetCollection).get();
 
-    final userSnapshot = await _firestore.collection('users').get();
-    final userResults = userSnapshot.docs
-        .where((doc) {
-          final data = doc.data();
-          final username = (data['username'] ?? '').toString().toLowerCase();
-          final role = (data['role'] ?? '').toString().toLowerCase();
-          return (username.contains(query) || role.contains(query)) &&
-              doc.id != currentUid;
-        })
-        .map((doc) => {
-              'uid': doc.id,
-              'username': doc['username'],
-              'role': doc['role'],
-            })
-        .toList();
+    final targetResults = targetSnapshot.docs
+    .where((doc) {
+      final data = doc.data();
+      final username = (data['username'] ?? '').toString().toLowerCase();
+      return username.contains(query) && doc.id != currentUid;
+    })
+    .map((doc) {
+      final data = doc.data();
+      return {
+        'uid': doc.id,
+        'username': data['username'] ?? 'Unknown',
+        'type': data['type'] ?? 'user',
+        'profilepicture': data['profileImgUrl'] ?? '',
+      };
+    })
+    .toList();
 
-    final coachSnapshot = await _firestore.collection('coaches').get();
-    final coachResults = coachSnapshot.docs
-        .where((doc) {
-          final data = doc.data();
-          final username = (data['username'] ?? '').toString().toLowerCase();
-          final role = (data['role'] ?? '').toString().toLowerCase();
-          return (username.contains(query) || role.contains(query)) &&
-              doc.id != currentUid;
-        })
-        .map((doc) => {
-              'uid': doc.id,
-              'username': doc['username'],
-              'role': doc['role'],
-            })
-        .toList();
 
-    combinedResults.addAll(userResults);
-    combinedResults.addAll(coachResults);
+    combinedResults.addAll(targetResults);
 
-    final uniqueResults = {
-      for (var user in combinedResults) user['uid']: user
-    }.values.toList();
+    final uniqueResults =
+        {for (var user in combinedResults) user['uid']: user}.values.toList();
 
     setState(() {
       _searchResults = uniqueResults;
@@ -150,13 +156,13 @@ class _SearchUserPageState extends State<SearchUserPage> {
     });
   }
 
-  void startChat(Map<String, dynamic> selectedUser) {
+  void startChat(Map<String, dynamic> selectedUser) async {
     final currentUid = _auth.currentUser?.uid;
     if (currentUid == null) return;
 
     final chatRoomId = getChatRoomId(currentUid, selectedUser['uid']);
 
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChatRoom(
@@ -165,47 +171,83 @@ class _SearchUserPageState extends State<SearchUserPage> {
         ),
       ),
     );
+
+    fetchRecentChats();
   }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
+    final String profilePicture = user['profilepicture'] ?? '';
+    final String username = user['username'] ?? '';
+    final bool isSeen = user['isSeen'] ?? true;
+    final bool isNewMessage = user['isNewMessage'] ?? false;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF173D6A),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
+          radius: 28,
           backgroundColor: Colors.white,
-          child: Text(
-            user['username'][0].toUpperCase(),
-            style: const TextStyle(color: Colors.black),
-          ),
+          backgroundImage:
+              profilePicture.isNotEmpty ? NetworkImage(profilePicture) : null,
+          child: profilePicture.isEmpty && username.isNotEmpty
+              ? Text(
+                  username[0].toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                )
+              : null,
         ),
-        title: Text(
-          user['username'],
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                username,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            if (!isSeen)
+              Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: Colors.greenAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+          ],
         ),
         subtitle: Text(
-          user['role'] ?? 'User',
+          user['type'] ?? 'User',
           style: const TextStyle(
             color: Color(0xFFD4E6F1),
             fontSize: 13,
           ),
         ),
-        trailing: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+        trailing: IconButton(
+          icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+          onPressed: () => startChat(user),
+        ),
         onTap: () => startChat(user),
       ),
     );
@@ -221,11 +263,13 @@ class _SearchUserPageState extends State<SearchUserPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'Search Users to Chat',
+          'Chat',
           style: TextStyle(
             color: Color(0xFF4A4A4A),
             fontWeight: FontWeight.bold,
+            fontFamily: 'Jersey15',
             letterSpacing: 1.1,
+            fontSize: 36,
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
@@ -242,6 +286,18 @@ class _SearchUserPageState extends State<SearchUserPage> {
                 filled: true,
                 fillColor: Colors.white,
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _searchResults.clear();
+                          });
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
@@ -259,7 +315,8 @@ class _SearchUserPageState extends State<SearchUserPage> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Text("Recent Chats",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                   Expanded(
                     child: ListView.builder(
@@ -281,7 +338,8 @@ class _SearchUserPageState extends State<SearchUserPage> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Text("Search Results",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                   Expanded(
                     child: _searchResults.isEmpty

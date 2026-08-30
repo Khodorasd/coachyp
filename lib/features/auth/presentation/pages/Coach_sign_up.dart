@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:coachyp/features/auth/data/model/repositories_impl/auth_repository_impl.dart';
 import 'package:coachyp/features/auth/domain/Enteties/user_entity.dart';
-import 'package:coachyp/features/auth/domain/Repo/auth_repository.dart';
 import 'package:coachyp/features/auth/domain/UseCases/registerCoach.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

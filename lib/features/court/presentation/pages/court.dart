@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:coachyp/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -363,9 +364,9 @@ class _SportCourtFinderState extends State<SportCourtFinder> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sport Court Finder'),
+        title: Text('Sport Court Finder',style: TextStyle(color: Colors.white),),
         elevation: 0,
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.s2,
       ),
       body: Stack(
         children: [

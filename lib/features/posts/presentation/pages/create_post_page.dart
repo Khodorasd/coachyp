@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:coachyp/Pages/additionalpages/HomePage.dart';
+import 'package:coachyp/Pages/coachpages/Coachhome.dart';
 import 'package:coachyp/colors.dart';
 import 'package:coachyp/features/posts/domain/entities/post.dart';
 import 'package:coachyp/features/posts/domain/use_cases/create_post.dart';
@@ -14,7 +16,6 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
-
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({Key? key}) : super(key: key);
@@ -116,8 +117,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    // Return the selected slots when user is done
-                    Navigator.of(context).pop();
+                    // Update the availableDates with the newly selected time slots
+                    setState(() {
+                      _availableDates[dayString] = selectedSlots.toList();
+                    });
+
+                    Navigator.of(context).pop(); // Close the dialog
                   },
                   child: const Text('Done'),
                 ),
@@ -127,11 +132,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
         );
       },
     );
-
-    // After the dialog is closed, update the availableDates with the new selections
-    setState(() {
-      _availableDates[dayString] = selectedSlots.toList();
-    });
   }
 
   // Submit the post to Firestore and Firebase Storage
@@ -223,7 +223,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Post created successfully!")),
       );
-      Navigator.of(context).pop();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } catch (e) {
       print('🖨️ [ERROR] Failed to create post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -285,7 +288,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     color: Colors.grey[200],
                     height: 200,
                     child: kIsWeb
-                        ? FutureBuilder<Uint8List>(
+                        ? FutureBuilder<Uint8List>( // Compress the image for web
                             future: _pickedFile!.readAsBytes(),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {

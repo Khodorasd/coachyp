@@ -36,6 +36,7 @@ class AuthRepositoryImpl implements AuthRepository {
         .collection('users')
         .doc(credential.user!.uid)
         .set({
+      'username':user.username,
       'email': user.email,
       'uid': credential.user!.uid,
       'status': 'active',

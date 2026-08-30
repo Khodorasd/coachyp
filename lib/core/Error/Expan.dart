@@ -105,6 +105,7 @@ handleDioException(DioException e) {
       throw CancelException(
           ErrorModel(errorMessage: e.toString(), status: 500));
 
+    case DioExceptionType.transformTimeout:
     case DioExceptionType.unknown:
       throw UnknownException(
           ErrorModel(errorMessage: e.toString(), status: 500));

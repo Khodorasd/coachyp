@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coachyp/colors.dart';
 import 'package:coachyp/features/Profile/presantation/pages/MyAccountPage.dart';
-import 'package:coachyp/features/Profile/presantation/pages/UserProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

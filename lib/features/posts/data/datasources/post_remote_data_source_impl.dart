@@ -37,7 +37,6 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
     try {
       final snapshot = await postsRef
           .where('type', isEqualTo: type)
-          
           .where('isActive', isEqualTo: true) // ✅ ONLY fetch active posts of this type
           .orderBy('timestamp', descending: true)
           .get();

@@ -1,4 +1,4 @@
-import 'package:coachyp/Pages/HomePage.dart';
+import 'package:coachyp/Pages/additionalpages/HomePage.dart';
 import 'package:coachyp/features/auth/presentation/pages/User_sign_up.dart';
 import 'package:coachyp/features/auth/presentation/pages/welcome.dart';
 import 'package:coachyp/features/posts/data/datasources/post_remote_data_source.dart';
@@ -8,7 +8,6 @@ import 'package:coachyp/features/posts/domain/repositories/post_repository.dart'
 import 'package:coachyp/features/posts/domain/use_cases/create_post.dart';
 import 'package:coachyp/features/posts/domain/use_cases/fetch_posts.dart';
 import 'package:coachyp/features/auth/presentation/pages/login.dart';
-import 'package:coachyp/features/posts/domain/use_cases/create_post.dart';
 import 'package:coachyp/firebase/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';

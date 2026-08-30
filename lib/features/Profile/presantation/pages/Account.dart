@@ -1,12 +1,10 @@
 
-import 'package:coachyp/features/Stripe_Payment/Payment_manager.dart';
 import 'package:coachyp/features/Profile/presantation/widget/ProfileMenu.dart';
 import 'package:coachyp/features/Profile/presantation/widget/ProfilePic.dart';
 import 'package:coachyp/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:coachyp/Pages/HomePage.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
   @override
@@ -54,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
               height: 230,
 
             ),
-            ElevatedButton(onPressed: ()=>PaymentManager.makePayment(20,"USD"), child: Text("Payment")),
+            // ElevatedButton(onPressed: ()=>PaymentManager.makePayment(20,"USD"), child: Text("Payment")),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: TextButton(

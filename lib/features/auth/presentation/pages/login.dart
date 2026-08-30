@@ -115,29 +115,9 @@ class _LoginState extends State<Login> {
                     const SizedBox(height: 30),
                     const Divider(color: Colors.white, indent: 60, endIndent: 60),
                     const SizedBox(height: 8),
-                    ShaderMask(
-                      shaderCallback: (bounds) => myLinearGradient().createShader(bounds),
-                      child: const Text(
-                        "OR",
-                        style: TextStyle(fontSize: 18, color: Colors.amberAccent),
-                      ),
-                    ),
+                    
                     const SizedBox(height: 8),
-                    const Divider(color: Colors.white, indent: 60, endIndent: 60),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(FontAwesomeIcons.google, color: Colors.redAccent),
-                      label: const Text(
-                        "Sign in with Google",
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
+                   
                     const SizedBox(height: 25),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -237,20 +217,31 @@ class _LoginState extends State<Login> {
         final uid = credential.user!.uid;
 
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-        if (userDoc.exists) {
+          if ( userDoc['status'] == 'disabled') {
+            await AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              title: 'Account rejected',
+              desc: 'Your account is bin rejected from being a coach.',
+            ).show();
+            await FirebaseAuth.instance.signOut();
+            return;
+          }
+         else if (userDoc.exists) {
           Navigator.of(context).pushReplacementNamed("HomePage");
           return;
-        }
+        } 
 
         final coachDoc = await FirebaseFirestore.instance.collection('coaches').doc(uid).get();
         if (coachDoc.exists) {
+          print( coachDoc.data());
           final coachData = coachDoc.data();
           if (coachData != null && coachData['status'] == 'pending') {
             await AwesomeDialog(
               context: context,
               dialogType: DialogType.info,
               title: 'Account Pending',
-              desc: 'Your account is awaiting admin approval.',
+              desc: 'Your account is disabeld .',
             ).show();
             await FirebaseAuth.instance.signOut();
             return;

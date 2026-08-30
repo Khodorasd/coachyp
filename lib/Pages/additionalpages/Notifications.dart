@@ -1,7 +1,7 @@
 
 import 'package:coachyp/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:line_icons/line_icons.dart';
+
 
 class Notificationspage extends StatelessWidget {
  

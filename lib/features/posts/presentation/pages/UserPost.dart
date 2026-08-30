@@ -1,4 +1,5 @@
 import 'package:coachyp/colors.dart';
+import 'package:coachyp/features/posts/presentation/pages/sessions.dart';
 import 'package:coachyp/features/search/profileview.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +14,7 @@ class UserPost extends StatefulWidget {
   final String profileImgUrl;
   final List<String> likes;
   final String coachId;
-  
+  final Map<String, List<String>> availableDates; // Add availableDates map
 
   const UserPost({
     Key? key,
@@ -25,6 +26,7 @@ class UserPost extends StatefulWidget {
     required this.profileImgUrl,
     required this.likes,
     required this.coachId,
+    required this.availableDates, // Pass availableDates
   }) : super(key: key);
 
   @override
@@ -73,10 +75,35 @@ class _UserPostState extends State<UserPost> {
       }
     } catch (e) {
       print('Error toggling like: $e');
-      // Optional: show a snackbar if needed
     } finally {
       setState(() => isProcessingLike = false);
     }
+  }
+
+  // Navigate to the booking page with availability details
+  void _bookSession() {
+    if (widget.availableDates.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No availability selected for this post')),
+      );
+      return;
+    }
+
+    Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => BookingPage(
+      availableDates: widget.availableDates,
+      coachUserMap: {
+        'uid': widget.coachId,
+        'username': widget.username,
+        'profilepicture': widget.profileImgUrl,
+        'type': widget.type,
+      },
+    ),
+  ),
+);
+
   }
 
   @override
@@ -211,30 +238,29 @@ class _UserPostState extends State<UserPost> {
                   ),
                 ),
 
-                // Book Session Button
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.s2,
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      // TODO: Implement Book Session logic
-                    },
-                    icon: const Icon(Icons.add, color: AppColors.background),
-                    label: const Text(
-                      "Book Session",
-                      style: TextStyle(
-                          color: AppColors.background,
-                          fontSize: 18,
-                          fontFamily: 'Jersey15'),
+                // Book Session Button (only show if availability exists)
+                if (widget.availableDates.isNotEmpty)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.s2,
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: _bookSession,
+                      icon: const Icon(Icons.add, color: AppColors.background),
+                      label: const Text(
+                        "Show Availability",
+                        style: TextStyle(
+                            color: AppColors.background,
+                            fontSize: 18,
+                            fontFamily: 'Jersey15'),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -271,3 +297,6 @@ class _UserPostState extends State<UserPost> {
     );
   }
 }
+
+// Booking Page to show available time slots
+

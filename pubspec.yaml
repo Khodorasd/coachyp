@@ -41,7 +41,7 @@ dependencies:
   dartz: ^0.10.1
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.1
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: ^11.0.0
   awesome_dialog: ^3.2.1
   dot_navigation_bar: ^1.0.2
   google_nav_bar: ^5.0.7
@@ -77,11 +77,15 @@ dependencies:
   shimmer: ^3.0.0
   flutter_datetime_picker: ^1.5.1
   flutter_image_compress: ^2.4.0
+  flutter_launcher_icons: ^0.14.3
 
   
  
 
-  
+flutter_launcher_icons:
+  image_path: "assets/image/spart-club.jpg"  # path to your icon image
+  ios: true
+  android: false  
   
 
 dev_dependencies:
