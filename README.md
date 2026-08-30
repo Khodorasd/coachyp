@@ -68,10 +68,6 @@ Add android/app/google-services.json and ios/Runner/GoogleService-Info.plist
 
 Add your publishable key where Stripe.publishableKey is set, and keep the secret key server-side — never in the client.
 
-3. Google Maps
-
-Add your API key to android/app/src/main/AndroidManifest.xml and ios/Runner/AppDelegate.swift.
-
 Run it
 
 bash
