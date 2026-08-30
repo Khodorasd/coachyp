@@ -3,6 +3,8 @@ Coachy
 A cross-platform Flutter app that connects clients with sports and fitness coaches — discover coaches nearby, follow their posts, book sessions and pay in-app.
 
 Built with Flutter, Firebase and Stripe following Clean Architecture. Final-year Computer Science project, Beirut Arab University.
+<img width="1320" height="2868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 17 55" src="https://github.com/user-attachments/assets/e3ab2f1a-76b4-4c7a-9515-a8a0f4825775" />
+
 
 Features
 Authentication with email verification — Firebase Auth, with the app routing straight to the home screen for verified returning users and to login otherwise, driven by an authStateChanges listener rather than a manual session check.
