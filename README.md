@@ -3,7 +3,7 @@ Coachy
 A cross-platform Flutter app that connects clients with sports and fitness coaches — discover coaches nearby, follow their posts, book sessions and pay in-app.
 
 Built with Flutter, Firebase and Stripe following Clean Architecture. Final-year Computer Science project, Beirut Arab University.
-<img width="420" height="868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 17 55" src="https://github.com/user-attachments/assets/e3ab2f1a-76b4-4c7a-9515-a8a0f4825775" /> <img width="420" height="868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 20 16" src="https://github.com/user-attachments/assets/8ee1cbfe-dbcb-4d57-80e0-ee4d49ee1a35" />
+<img width="420" height="868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 21 22" src="https://github.com/user-attachments/assets/9fe454f1-7668-4c0f-b52e-8cab953a6416" /> <img width="420" height="868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 17 55" src="https://github.com/user-attachments/assets/e3ab2f1a-76b4-4c7a-9515-a8a0f4825775" /> <img width="420" height="868" alt="Simulator Screenshot - iPhone 16 Pro Max - 2026-08-30 at 22 20 16" src="https://github.com/user-attachments/assets/8ee1cbfe-dbcb-4d57-80e0-ee4d49ee1a35" />
 
 
 
